@@ -1,56 +1,55 @@
-import { config as dotenvConfig } from 'dotenv';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+import { config } from 'dotenv';
 import { fetch } from 'undici';
 
-// Load environment variables from the .env file
-dotenvConfig();
+config(); // Load environment variables from .env
 
-export default async function handler(req, res) {
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+export async function handler(event) {
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method Not Allowed' }),
+    };
+  }
+
   try {
-    // Ensure this is a POST request
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method Not Allowed' });
-    }
+    const { prompt } = JSON.parse(event.body);
 
-    const { prompt } = req.body;
+    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_API_KEY;
 
-    if (!prompt) {
-      return res.status(400).json({ error: 'Missing prompt in request body' });
-    }
-
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error('GEMINI_API_KEY is not defined in the environment variables.');
-      return res.status(500).json({ error: 'Internal Server Error: Missing API Key' });
-    }
-
-    // Make request to Gemini API
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
-        ]
+        contents: [{ parts: [{ text: prompt }] }]
       })
     });
 
-    if (!response.ok) {
-      const errorDetails = await response.text();
-      console.error('Gemini API returned an error:', errorDetails);
-      return res.status(500).json({ error: 'Failed to generate content' });
-    }
-
     const data = await response.json();
 
-    const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from AI.';
-    return res.status(200).json({ text: generatedText });
+    if (!response.ok) {
+      console.error("API error:", data);
+      return {
+        statusCode: response.status,
+        body: JSON.stringify({ error: data.error || 'API Error' })
+      };
+    }
 
-  } catch (error) {
-    console.error('Unhandled error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ result: resultText })
+    };
+
+  } catch (err) {
+    console.error("Function error:", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Server error', details: err.message })
+    };
   }
 }
