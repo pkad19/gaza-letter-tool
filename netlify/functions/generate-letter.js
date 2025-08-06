@@ -1,55 +1,64 @@
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-import { config } from 'dotenv';
-import { fetch } from 'undici';
+const { Readable } = require('stream');
+const { request } = require('undici');
+require('dotenv').config();
 
-config(); // Load environment variables from .env
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-export async function handler(event) {
-  if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method Not Allowed' }),
-    };
-  }
-
+exports.handler = async (event, context) => {
   try {
-    const { prompt } = JSON.parse(event.body);
+    const { prompt } = JSON.parse(event.body || '{}');
 
-    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + GEMINI_API_KEY;
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("API error:", data);
+    if (!prompt || prompt.trim() === '') {
       return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: data.error || 'API Error' })
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Prompt is required.' }),
       };
     }
 
-    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+    const apiKey = process.env.GEMINI_API_KEY;
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey;
+
+    const payload = {
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ],
+    };
+
+    const response = await request(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: Readable.from([JSON.stringify(payload)]),
+    });
+
+    const { statusCode, body } = response;
+
+    if (statusCode !== 200) {
+      const text = await body.text();
+      console.error('API response error:', text);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Failed to generate letter.' }),
+      };
+    }
+
+    const json = await body.json();
+    const generatedText = json.candidates?.[0]?.content?.parts?.[0]?.text;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ result: resultText })
+      body: JSON.stringify({ text: generatedText || 'No content returned from API.' }),
     };
-
-  } catch (err) {
-    console.error("Function error:", err);
+  } catch (error) {
+    console.error('Unhandled error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Server error', details: err.message })
+      body: JSON.stringify({ error: 'Server error occurred.' }),
     };
   }
-}
+};
