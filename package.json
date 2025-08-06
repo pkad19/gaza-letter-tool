@@ -18,6 +18,6 @@
   },
   "homepage": "https://github.com/pkad19/gaza-letter-tool#readme",
   "dependencies": {
-    "node-fetch": "^3.3.2"
+    "undici": "^7.13.0"
   }
 }

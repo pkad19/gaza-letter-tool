@@ -1,64 +1,61 @@
-const fetch = require('node-fetch');
+const { fetch } = require('undici'); // Replaces node-fetch
+require('dotenv').config();
 
-exports.handler = async function (event, context) {
-  console.log("🔁 Function triggered");
-
+exports.handler = async (event, context) => {
   try {
-    // Log the incoming event
-    console.log("📦 Incoming event body:", event.body);
+    const { prompt } = JSON.parse(event.body || '{}');
 
-    // Parse the request body
-    const { prompt } = JSON.parse(event.body);
-    console.log("🧠 Prompt received:", prompt);
-
-    // Get the Gemini API key from the environment variable
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error("❌ Missing GEMINI_API_KEY environment variable");
+    if (!prompt) {
       return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Server misconfiguration: missing API key' }),
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Missing prompt in request body' }),
       };
     }
 
-    // Make the request to Gemini API
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt }
-            ]
-          }
-        ]
-      })
-    });
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            {
+              text: `Please write a polite and professionally formatted letter to a UK Member of Parliament using this prompt as the core message:\n\n${prompt}`,
+            },
+          ],
+        },
+      ],
+    };
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API response error:', errorText);
+      return {
+        statusCode: response.status,
+        body: JSON.stringify({ error: 'Failed to fetch from Gemini API' }),
+      };
+    }
 
     const data = await response.json();
-    console.log("📨 Response from Gemini API:", data);
 
-    if (response.ok && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-      const letter = data.candidates[0].content.parts[0].text;
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ letter }),
-      };
-    } else {
-      console.error("⚠️ Gemini API returned an unexpected response:", data);
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Failed to generate letter from Gemini' }),
-      };
-    }
+    const text =
+      data.candidates?.[0]?.content?.parts?.[0]?.text || 'No content generated.';
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ letter: text }),
+    };
   } catch (error) {
-    console.error("🔥 Error caught in function:", error);
+    console.error('Function error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Internal Server Error' }),
+      body: JSON.stringify({ error: 'Server error generating letter' }),
     };
   }
 };
