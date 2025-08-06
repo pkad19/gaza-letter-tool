@@ -1,55 +1,56 @@
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-import { config } from 'dotenv';
+import { config as dotenvConfig } from 'dotenv';
 import { fetch } from 'undici';
 
-config();
+// Load environment variables from the .env file
+dotenvConfig();
 
-export default async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { prompt } = req.body;
-
-  if (!prompt) {
-    return res.status(400).json({ error: 'No prompt provided' });
-  }
-
+export default async function handler(req, res) {
   try {
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' + process.env.GEMINI_API_KEY,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ]
-        })
-      }
-    );
+    // Ensure this is a POST request
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+
+    const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'Missing prompt in request body' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error('GEMINI_API_KEY is not defined in the environment variables.');
+      return res.status(500).json({ error: 'Internal Server Error: Missing API Key' });
+    }
+
+    // Make request to Gemini API
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorDetails = await response.text();
+      console.error('Gemini API returned an error:', errorDetails);
+      return res.status(500).json({ error: 'Failed to generate content' });
+    }
 
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error('API response error:', data);
-      return res.status(500).json({ error: 'Failed to generate letter', detail: data });
-    }
+    const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from AI.';
+    return res.status(200).json({ text: generatedText });
 
-    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No content returned';
-
-    return res.status(200).json({ letter: generatedText });
-  } catch (err) {
-    console.error('Unexpected error:', err);
-    return res.status(500).json({ error: 'Unexpected server error' });
+  } catch (error) {
+    console.error('Unhandled error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+}
