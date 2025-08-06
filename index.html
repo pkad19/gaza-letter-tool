@@ -1,56 +1,103 @@
-
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gaza Crisis Action: One‑Minute MP Letter</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
 </head>
-<body class="bg-white text-gray-900 font-inter p-4 sm:p-8">
-  <div class="max-w-2xl mx-auto">
-    <h1 class="text-3xl sm:text-4xl font-bold mb-4">Write to Your MP in One Minute</h1>
-    <p class="mb-6 text-gray-700">Type what you want to say below. We'll rewrite it into a professional message for your MP.</p>
-    <textarea id="user-input" rows="6" placeholder="Type your message here..." class="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"></textarea>
-    <button id="generate-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">Generate Letter</button>
-    <div id="output" class="mt-6 p-4 border border-gray-200 bg-gray-50 rounded-lg text-gray-800 whitespace-pre-line"></div>
-  </div>
-  <script>
-    async function generateLetter(prompt) {
-      try {
-        const res = await fetch('/.netlify/functions/generate-letter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          console.error('API returned error:', data);
-          document.getElementById('output').innerText = '⚠️ Sorry, there was a problem generating the letter. Please try again.';
-          return;
-        }
-        if (data.text) {
-          document.getElementById('output').innerText = data.text;
-        } else {
-          document.getElementById('output').innerText = '⚠️ No letter content returned.';
-        }
-      } catch (err) {
-        console.error('Fetch error:', err);
-        document.getElementById('output').innerText = '⚠️ Failed to contact the server. Please try again.';
-      }
-    }
-    document.getElementById('generate-button').addEventListener('click', () => {
-      const prompt = document.getElementById('user-input').value.trim();
-      if (prompt.length === 0) {
-        document.getElementById('output').innerText = '⚠️ Please enter a message first.';
-        return;
-      }
-      document.getElementById('output').innerText = '⏳ Generating your letter...';
-      generateLetter(prompt);
-    });
-  </script>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en" class="scroll-smooth"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Gaza Crisis Action: One‑Minute MP Letter&lt;/title&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- Tailwind CSS --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- Google Fonts --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body class="bg-white text-gray-900 font-inter p-4 sm:p-8"&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="max-w-2xl mx-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1 class="text-3xl sm:text-4xl font-bold mb-4"&gt;Write to Your MP in One Minute&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;p class="mb-6 text-gray-700"&gt;Type what you want to say below. We'll rewrite it into a professional message for your MP.&lt;/p&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Text Input --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;textarea</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id="user-input"</p>
+<p class="p1"><span class="Apple-converted-space">      </span>rows="6"</p>
+<p class="p1"><span class="Apple-converted-space">      </span>placeholder="Type your message here..."</p>
+<p class="p1"><span class="Apple-converted-space">      </span>class="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&gt;&lt;/textarea&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Generate Button --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id="generate-button"</p>
+<p class="p1"><span class="Apple-converted-space">      </span>class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>Generate Letter</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/button&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Output Area --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div</p>
+<p class="p1"><span class="Apple-converted-space">      </span>id="output"</p>
+<p class="p1"><span class="Apple-converted-space">      </span>class="mt-6 p-4 border border-gray-200 bg-gray-50 rounded-lg text-gray-800 whitespace-pre-line"</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- Script to call Netlify Function --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>async function generateLetter(prompt) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const res = await fetch('/.netlify/functions/generate-letter', {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>method: 'POST',</p>
+<p class="p1"><span class="Apple-converted-space">          </span>headers: { 'Content-Type': 'application/json' },</p>
+<p class="p1"><span class="Apple-converted-space">          </span>body: JSON.stringify({ prompt })</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const data = await res.json();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (!res.ok) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>console.error('API returned error:', data);</p>
+<p class="p1"><span class="Apple-converted-space">          </span>document.getElementById('output').innerText = '⚠️ Sorry, there was a problem generating the letter. Please try again.';</p>
+<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (data.text) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>document.getElementById('output').innerText = data.text;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>document.getElementById('output').innerText = '⚠️ No letter content returned.';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>} catch (err) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>console.error('Fetch error:', err);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('output').innerText = '⚠️ Failed to contact the server. Please try again.';</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>document.getElementById('generate-button').addEventListener('click', () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const prompt = document.getElementById('user-input').value.trim();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (prompt.length === 0) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('output').innerText = '⚠️ Please enter a message first.';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('output').innerText = '⏳ Generating your letter...';</p>
+<p class="p1"><span class="Apple-converted-space">      </span>generateLetter(prompt);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
 </body>
 </html>
