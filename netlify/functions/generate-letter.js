@@ -1,61 +1,55 @@
-const { fetch } = require('undici'); // Replaces node-fetch
-require('dotenv').config();
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+import { config } from 'dotenv';
+import { fetch } from 'undici';
 
-exports.handler = async (event, context) => {
+config();
+
+export default async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'No prompt provided' });
+  }
+
   try {
-    const { prompt } = JSON.parse(event.body || '{}');
-
-    if (!prompt) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Missing prompt in request body' }),
-      };
-    }
-
-    const requestBody = {
-      contents: [
-        {
-          parts: [
-            {
-              text: `Please write a polite and professionally formatted letter to a UK Member of Parliament using this prompt as the core message:\n\n${prompt}`,
-            },
-          ],
-        },
-      ],
-    };
-
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=' + process.env.GEMINI_API_KEY,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ]
+        })
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API response error:', errorText);
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: 'Failed to fetch from Gemini API' }),
-      };
-    }
-
     const data = await response.json();
 
-    const text =
-      data.candidates?.[0]?.content?.parts?.[0]?.text || 'No content generated.';
+    if (!response.ok) {
+      console.error('API response error:', data);
+      return res.status(500).json({ error: 'Failed to generate letter', detail: data });
+    }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ letter: text }),
-    };
-  } catch (error) {
-    console.error('Function error:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Server error generating letter' }),
-    };
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No content returned';
+
+    return res.status(200).json({ letter: generatedText });
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    return res.status(500).json({ error: 'Unexpected server error' });
   }
 };
