@@ -1,13 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gaza Crisis Action: One‑Minute MP Letter</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,31 +13,10 @@
   <div class="max-w-2xl mx-auto">
     <h1 class="text-3xl sm:text-4xl font-bold mb-4">Write to Your MP in One Minute</h1>
     <p class="mb-6 text-gray-700">Type what you want to say below. We'll rewrite it into a professional message for your MP.</p>
-
-    <!-- Text Input -->
-    <textarea
-      id="user-input"
-      rows="6"
-      placeholder="Type your message here..."
-      class="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-    ></textarea>
-
-    <!-- Generate Button -->
-    <button
-      id="generate-button"
-      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-    >
-      Generate Letter
-    </button>
-
-    <!-- Output Area -->
-    <div
-      id="output"
-      class="mt-6 p-4 border border-gray-200 bg-gray-50 rounded-lg text-gray-800 whitespace-pre-line"
-    ></div>
+    <textarea id="user-input" rows="6" placeholder="Type your message here..." class="w-full border border-gray-300 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"></textarea>
+    <button id="generate-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">Generate Letter</button>
+    <div id="output" class="mt-6 p-4 border border-gray-200 bg-gray-50 rounded-lg text-gray-800 whitespace-pre-line"></div>
   </div>
-
-  <!-- Script to call Netlify Function -->
   <script>
     async function generateLetter(prompt) {
       try {
@@ -49,15 +25,12 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt })
         });
-
         const data = await res.json();
-
         if (!res.ok) {
           console.error('API returned error:', data);
           document.getElementById('output').innerText = '⚠️ Sorry, there was a problem generating the letter. Please try again.';
           return;
         }
-
         if (data.text) {
           document.getElementById('output').innerText = data.text;
         } else {
@@ -68,7 +41,6 @@
         document.getElementById('output').innerText = '⚠️ Failed to contact the server. Please try again.';
       }
     }
-
     document.getElementById('generate-button').addEventListener('click', () => {
       const prompt = document.getElementById('user-input').value.trim();
       if (prompt.length === 0) {
